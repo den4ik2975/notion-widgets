@@ -12,26 +12,6 @@
 
             <h1>Эмулятор машины Тьюринга в четвёрках</h1>
 
-            <h2>О программе</h2>
-            <p>
-                Данное учебное пособие предназначено для изучения алгоритмической модели "Машина Тьюринга".
-                Приложение представляет собой интерпретатор программ МТ в четвёрках.
-            </p>
-            <p>
-                &copy; Алексей Дубинин<br/>
-                Приложение доступно на github: <a href="https://github.com/lxyd/jstu4">https://github.com/lxyd/jstu4</a><br/>
-                Условия лицензионного соглашеия (лицензия MIT) см. в файле <a href="COPYING-RU">COPYING</a>
-            </p>
-
-            <p>
-                Дистрибутив включает в себя следующие сторонние компоненты:
-            </p>
-            <ul>
-                <li><a href="http://jquery.com">jQuery</a> - javascript-фреймворк;</li>
-                <li><a href="https://github.com/lxyd/HotMilk">Hotmilk</a> - органайзер шаблонов, обёртка над шаблонизатором <a href="https://github.com/pvande/Milk">Milk</a>.</li>
-            </ul>
-
-            <hr/>
 
             <h2>Справка</h2>
             <p>
@@ -77,14 +57,6 @@
                 <li>Пробел в режиме выполнения - выполнить один шаг, при необходимости выйдя из быстрого режима;</li>
                 <li>Esc в режиме выполнения - вернуться к редактированию программы и ленты;</li>
             </ul>
-
-            <p>Пример (ненормированная замена 0 на 1 и наоборот):</p>
-            <code>
-                00,&nbsp;,&lt;,rep<br/>
-                rep,0,1,mov&nbsp;&nbsp;rep,1,0,mov&nbsp;&nbsp;rep,&nbsp;,&gt;,fin&nbsp;&nbsp;# переписываем текущую ячейку<br/>
-                mov,0,&lt;,rep&nbsp;&nbsp;mov,1,&lt;,rep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// двигаемся на шаг влево<br/>
-                fin,0,&gt;,fin&nbsp;&nbsp;fin,1,&gt;,fin&nbsp;&nbsp;fin,&nbsp;,#,fin&nbsp;&nbsp;# в конце работы перемещаемся в конец слова
-            </code>
 
             <p>
                 <a href="#" onclick="history.back(); return false;">&larr; Вернуться к программе</a>
