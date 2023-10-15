@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+<head>
+  <title>Эмулятор нормальных алгоритмов Маркова</title>
+  <link rel=stylesheet type="text/css" href="/main.css">
+  <meta http-equiv=content-type content="text/html; charset=utf-8">
+</head>
+<body>
+<div class=body>
+
+<p><h1>Эмулятор нормальных алгоритмов Маркова</h1>
+
+</p>
+<style>
+.Script   { font-family:monotype corsiva,serif;font-size:120%;font-style:italic }
+.Coursive { font-family:times new roman,serif;font-size:120%;font-style:italic }
+.Serif    { font-family:times new roman,serif;font-size:120% }
+#Input
+{
+  font-size :150%;
+  width     :100%;
+  border    :1px gray solid;
+  border-radius:4px;
+}
+#CodeArea
+{
+  font-size:  16px;
+}
+#CodeArea, #ParsedCode
+{
+  border    :1px solid gray;
+  border-radius : 4px;
+  width     :98%;
+  height    :300px;
+  overflow-y: scroll;
+}
+#ErrorMsg
+{
+  width     : 100%;
+  height    : 100px;
+  border    : 1px solid gray;
+  font-size : 80%;
+  overflow  : scroll;
+  border-radius: 4px;
+}
+.codeLineNumbers
+{
+  vertical-align: bottom;
+  text-align: right;
+  width: 25px;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 70%;
+  color: #004488;
+}
+.codeOperator
+{
+  text-align: center;
+  font-face : times new roman, serif;
+  color: #004488;
+}
+</style>
+
+<script language=javascript>
+<!--
+
+var ErrorMsg;
+var Word;
+var CodeArea;
+var ParsedCode;
+var Rules;
+var RulesMaxQty     = 50;
+var MaxExecution    = 500;
+var ExecutionCount  = 0;
+
+function HighLightCode ( Code, Line )
+{
+  var Area = document.getElementById ("ParsedCode");
+  var Alpha, Betha, Arrow, Dummy;
+  Dummy = "<table cellspacing=0 width=\"100%\">";
+  for ( i = 0; i < Code.length; ++i )
+  {
+    var Rule = Code[i];
+    var pos = Rule.indexOf ( "->" )
+    if ( pos < 0 ) pos = Rule.indexOf ( "=>" );
+    if ( 0 <= pos )
+    {
+      Alpha = Rule.substr ( 0, pos );
+      Arrow = Rule.substr ( pos, 2 );
+      if ( Arrow == "->" ) Arrow = "&#8594"; else Arrow = "&#8614;";
+      Betha = Rule.substr ( pos + 2, Rule.length - pos - 2 );
+    }
+    Dummy += "<tr valign=top";
+    if ( i == Line ) Dummy += " bgcolor=#e0f0e0";
+    Dummy += "><td class=\"codeLineNumbers\">" + (i + 1 ) + ".</td><td align=right>" + Alpha + "</td><td class=\"codeOperator\">&nbsp;" + Arrow + "&nbsp;</td><td align=left width=\"100%\">" + Betha + "</td></tr>";
+  }
+  Dummy += "</table>";
+  Area.innerHTML = Dummy;
+}
+
+function ParseRules ()
+{
+  Rules = new Array ();
+  CodeArea   = document.getElementById ("CodeArea");
+  
+  var R = 0;
+  var Code = CodeArea.value.split (/\n/);
+  for ( i = 0; i < Code.length && i < RulesMaxQty; ++i )
+  {
+    var tmp = Code[i];
+    var Rule = "";
+    for ( j = 0; j < tmp.length; ++j )
+    {
+      c = tmp.substr(j,1);
+      if ( c != " " && c != "\t" ) Rule += c;
+    }
+    if ( 0 < Rule.length )
+    {
+       if ( Rule.indexOf ( "->" ) < 0 && Rule.indexOf ( "=>" ) < 0 )
+         ErrorMsg.innerHTML = "<b>Ошибка</b>: В строке " + ( i + 1 ) + " пропущен знак правила.<br/>" + ErrorMsg.innerHTML;
+       else
+       {
+         Rules[R] = Rule;
+         ++R;
+       }
+    }
+    else
+      ErrorMsg.innerHTML = "<b>Ошибка</b>: Строка " + ( i + 1 ) + " - пустая.<br/>" + ErrorMsg.innerHTML;
+  }
+  return R;
+}
+
+function RunOnce ()
+{
+      Word      = document.getElementById ("Word");
+  var Res       = false;
+  var Executed  = 0;
+  var WordVal   = Word.value;
+  var TerminalRule;
+  var pos;
+  var alpha, betha;
+  var c;
+
+  var R = ParseRules ();
+
+  i = 0;
+  TotalRules = R <= 20 ? R : 20;
+  TerminalRule = false;
+  while ( Executed == 0 && i < TotalRules && !TerminalRule )
+  {
+    TerminalRule = false;
+    Rule = Rules[i];
+    if ( 0 <= ( pos = Rule.indexOf ( "->" ) ) )
+    {
+      alpha = Rule.substr ( 0, pos );
+      betha = Rule.substr ( pos + 2, Rule.length - pos - 2 );
+      if ( 0 <= WordVal.indexOf (alpha) )
+      {
+        Word.value = WordVal.replace ( alpha, betha );
+        Executed = i + 1;
+      }
+    }
+    else if ( 0 <= ( pos = Rule.indexOf ( "=>" ) ) )
+    {
+      alpha = Rule.substr ( 0, pos );
+      betha = Rule.substr ( pos + 2, Rule.length - pos - 2 );
+      if ( 0 <= WordVal.indexOf (alpha) )
+      {
+        Word.value = WordVal.replace ( alpha, betha );
+        TerminalRule = true;
+        Executed = i + 1;
+      }
+    }
+    if ( Executed ) HighLightCode ( Rules, i );
+    ++i;
+  }
+  return ( Executed != 0 && !TerminalRule ) ? Executed : 0;
+}
+
+function Run ()
+{
+  var Applicable      = true;
+
+  ExecutionCount      = 0;
+  ErrorMsg.innerHTML  = "";
+  
+  while ( RunOnce () && ExecutionCount < MaxExecution ) 
+    ++ExecutionCount;
+  
+  if ( ExecutionCount == MaxExecution )
+    ErrorMsg.innerHTML = "<b>Ошибка</b>: Превышено время выполнения.</br>" + ErrorMsg.innerHTML;
+  else
+    ErrorMsg.innerHTML = "<b>Выполнение завершено</b>.</br>Выполнено шагов: " + ExecutionCount + ".<br/>" + ErrorMsg.innerHTML;
+}
+
+function Step ()
+{
+  ErrorMsg   = document.getElementById ("ErrorMsg");
+  ++ExecutionCount;
+  if ( r = RunOnce() ) 
+    ErrorMsg.innerHTML = "Шаг " + ExecutionCount + " - Применено правило " + r + ".</br>" + ErrorMsg.innerHTML;
+  else
+    ErrorMsg.innerHTML = "<b>Останов</b>: Ни одно правило не применено, либо выполнено терминальное правило.</br>" + ErrorMsg.innerHTML ;
+}
+
+function Reset ()
+{
+  ErrorMsg   = document.getElementById ("ErrorMsg");
+  Word       = document.getElementById ("Word");
+  CodeArea   = document.getElementById ("CodeArea");
+  ParsedCode = document.getElementById ("ParsedCode");
+
+  ErrorMsg.innerHTML = "";
+  ParsedCode.innerHTML = "<table width=100%><tr><td> </td></tr></table>";
+  ExecutionCount       = 0;  
+  ParseRules ();
+  HighLightCode ( Rules, -1 );
+}
+
+function LoadAlg ( WordVal, Alg )
+{
+  ErrorMsg   = document.getElementById ("ErrorMsg");
+  Word       = document.getElementById ("Word");
+  CodeArea   = document.getElementById ("CodeArea");
+  
+  CodeArea.value = Alg;
+  Word.value = WordVal;
+  Reset ();
+  ErrorMsg.innerHTML = "Загружена запись алгоритма.";
+}
+
+-->
+</script>
+
+<table>
+<tr valign=top><td width=400>
+
+<p>
+Входное (выходное) слово:<br />
+<input type=text size=40 class=ef id=Word style="width:400px;font-family: PT Mono, courier">
+</p>
+
+Правила:<br />
+
+<table cellspacing=0 style="width:100%;min-height:300px"><tr valign=top><td style="width:50%">
+<small style="font-size:70%;color:gray">Исходный текст</small>
+  <textarea id=CodeArea> </textarea>
+</td><td style="width:50%;padding-left:5px;">
+<small style="font-size:70%;color:gray">Текст после загрузки в &laquo;память&raquo;</small>
+  <div id=ParsedCode> </div>
+</td></tr></table>
+
+
+<p>
+<input type=button class=ef value="Шаг" onClick="Step()">
+<input type=button class=ef value="Запуск" onClick="Run()">
+<input type=button class=ef value="Сброс на начало" onClick="Reset()">
+</p>
+
+<div id=ErrorMsg></div>
+
+<p>
+Максимальное количество обрабатываемых правил: 50.<br />
+Максимальное количество циклов выполнения: 500.
+</p>
+
+</td><td width=20></td><td>
+<p>
+</body>
+</html>
